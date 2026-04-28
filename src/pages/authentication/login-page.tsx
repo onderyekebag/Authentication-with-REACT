@@ -2,12 +2,14 @@ import {useFormik} from "formik";
 import type {LoginInterface} from "../../interfaces/auth.interface.ts";
 import {useDispatch} from "react-redux";
 import {loginService} from "../../api/services/auth.service.tsx";
-import {useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
+import {getAccount} from "../../api/services/account.service.tsx";
 
 const LoginPage = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const initialValues: LoginInterface = {
     username: '',
@@ -17,13 +19,15 @@ const LoginPage = () => {
 
   const { values, handleChange, handleSubmit } = useFormik({
     initialValues,
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
       if (!values) {
         return;
       }
 
-      dispatch(loginService(values));
-      navigate('/');
+      await dispatch(loginService(values));
+      await dispatch(getAccount());
+      const redirectTo = location.state?.redirectTo || '/';
+      navigate(redirectTo, { replace: true });
     }
   });
 
